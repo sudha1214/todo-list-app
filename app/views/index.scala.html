@@ -1,0 +1,96 @@
+<html>
+	<head>
+		<title>Todo Task App</title>
+		<link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/normalize.css")">
+		<link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/style.css")">
+		<link href="http://fonts.googleapis.com/css?family=Cabin:700" rel="stylesheet" type="text/css">
+		<link href="http://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">		
+		<script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")"><</script>
+		<script src="@routes.Assets.at("javascripts/taskManager.js")"><</script>
+		<script>
+		function populateTasks() {
+			$.getJSON("/tasks", function(result) {
+				var obj = $.parseJSON(JSON.stringify(result));
+				var html ='<tbody>';
+				$.each(obj, function(key, value) {
+					html += '<tr>';
+					html += '<td><a class="editUser" onclick="deleteTask(' + value.id + ')" href="#" id=' + value.id + '>&#x2716;</></td>';
+					html += '<td style="width: 20px;">&nbsp;</td>'			
+					html += '<td>' + value.subject + '</td>';
+					html += "</tr>"
+				});
+				html += "</tbody>";
+				$('#dataTable').html(html);	
+			});				
+		}
+				
+		function deleteTask(taskId) {
+			console.log("User deleted " + taskId);
+			var task_desc_json = {};
+			task_desc_json["subject"] = taskId;
+			$.ajax({
+				type: 'DELETE',
+				async: false,
+				data: JSON.stringify(task_desc_json),
+				dataType: "json",
+				contentType: "application/json",
+				url: "/tasks/" + taskId,
+				success: function(result) {
+					populateTasks();
+				}
+			});
+		}
+
+		$(document).ready(function() {
+		$("#btnCreateTask").click(function() {
+				var task_desc_json = {};
+				if ($('#taskName').val() != '') {
+				task_desc_json["subject"] =$('#taskName').val();
+				$.ajax({
+					type: 'POST',
+					async: false,
+					data: JSON.stringify(task_desc_json),
+					dataType: "json",
+					contentType: "application/json",
+					url: "/tasks",
+					success: function(result) {
+						populateTasks();
+						$('#taskName').val('');
+					}
+				});
+			  }
+		});
+		$.getJSON("/tasks", function(result) {
+			var obj = $.parseJSON(JSON.stringify(result));
+			var html ='<tbody>';
+			$.each(obj, function(key, value) {
+				html += '<tr>';
+				html += '<td><a class="editUser" onclick="deleteTask(' + value.id + ')" href="#" id=' + value.id + '>&#x2716;</></td>';
+				html += '<td style="width: 20px;">&nbsp;</td>'			
+				html += '<td>' + value.subject + '</td>';
+				html += "</tr>"
+			});
+			html += "</tbody>";
+			$('#dataTable').html(html);	
+		});			
+
+		});
+		</script>
+	</head>
+	<body>
+	<section class="main">
+		<header>
+		<h1 class="title"> Todo List </h1>
+		</header>
+	   <input type="text" placeholder="What needs to be done here?" id="taskName" style="width:310px;margin-right: 25px;"/>		
+	   <input type="submit" class="addbutton" value="Create Task" id="btnCreateTask"/>
+	   <ul class="list">
+	   	<li class="li-todo">
+	   		<table id="dataTable">
+	   			
+	   		</table>
+	   	</li>
+	   </ul>
+	</section>
+	</body>
+</html>
